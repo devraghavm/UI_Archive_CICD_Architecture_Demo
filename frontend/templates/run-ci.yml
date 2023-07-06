@@ -1,0 +1,17 @@
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '20.x'
+    displayName: 'Install Node.js'
+  - task: Npm@1
+    inputs:
+      command: 'custom'
+      customCommand: 'install'
+      workingDir: $(working-dir)/
+    displayName: 'Run npm install in $(working-dir)'
+  - task: Npm@1
+    inputs:
+      command: 'custom'
+      customCommand: 'test'
+      workingDir: $(working-dir)/
+    displayName: 'Run npm test in $(working-dir)'

@@ -1,0 +1,21 @@
+# Build numbering format
+name: $(BuildID)
+
+trigger:
+  branches:
+    include:
+      - master
+      - feature/*
+  paths:
+    exclude:
+      - 'app1/*'
+      - 'app2/*'
+      - 'templates/*'
+      - 'azure-pipelines.yml'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+  - script: |
+      echo "Hello from '/' root folder."

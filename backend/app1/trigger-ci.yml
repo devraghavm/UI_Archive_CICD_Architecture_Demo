@@ -1,0 +1,41 @@
+# Build numbering format
+name: backend_$(working-dir)_ci_$(BuildID)
+
+trigger:
+  branches:
+    exclude:
+      - '*'
+  paths:
+    include:
+      - '$(working-dir)/*'
+    exclude:
+      - '$(working-dir)/templates/*'
+      - '$(working-dir)/azure-pipelines.yml'
+
+pr:
+  branches:
+    include:
+      - '*'
+  paths:
+    include:
+      - $(working-dir)/*
+    exclude:
+      - '$(working-dir)/templates/*'
+      - '$(working-dir)/azure-pipelines.yml'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: working-dir
+    value: 'app1'
+
+stages:
+  - stage: app1_install
+    displayName: 'Install App1'
+    jobs:
+      - job: run_ci_tasks
+        displayName: 'Run CI Tasks'
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        steps:
+          - template: ../templates/run-ci.yml

@@ -1,0 +1,1399 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Custom VPC Creation With Private and Public Subnet
+
+Parameters:
+  VPCName:
+    Description: CIDR range for our VPC
+    Type: String
+    Default: DemoCustomVPC
+  VPCCidr:
+    Description: CIDR range for our VPC
+    Type: String
+    Default: 10.0.0.0/16
+  PrivateSubnetACidr:
+    Description: Private Subnet IP Range
+    Type: String
+    Default: 10.0.0.0/24
+  PrivateSubnetBCidr:
+    Description: Private Subnet IP Range
+    Type: String
+    Default: 10.0.1.0/24
+  PrivateSubnetCCidr:
+    Description: Private Subnet IP Range
+    Type: String
+    Default: 10.0.2.0/24
+  PrivateSubnetDCidr:
+    Description: Private Subnet IP Range
+    Type: String
+    Default: 10.0.3.0/24
+  PublicSubnetACidr:
+    Description: Public Subnet IP Range
+    Type: String
+    Default: 10.0.4.0/24
+  PublicSubnetBCidr:
+    Description: Public Subnet IP Range
+    Type: String
+    Default: 10.0.5.0/24
+  PublicSubnetCCidr:
+    Description: Public Subnet IP Range
+    Type: String
+    Default: 10.0.6.0/24
+  PublicSubnetDCidr:
+    Description: Public Subnet IP Range
+    Type: String
+    Default: 10.0.7.0/24
+  AvailabilityZoneA:
+    Description: Avaibalbility Zone 1
+    Type: String
+    Default: us-west-2a
+  AvailabilityZoneB:
+    Description: Avaibalbility Zone 2
+    Type: String
+    Default: us-west-2b
+  AvailabilityZoneC:
+    Description: Avaibalbility Zone 3
+    Type: String
+    Default: us-west-2c
+  AvailabilityZoneD:
+    Description: Avaibalbility Zone 4
+    Type: String
+    Default: us-west-2d
+  TestEcrFrontendApp1RepoName:
+    Description: Name for test-frontend-app1 ecr repo
+    Type: String
+    Default: test-frontend-app1
+  TestEcrFrontendApp2RepoName:
+    Description: Name for test-frontend-app2 ecr repo
+    Type: String
+    Default: test-frontend-app2
+  TestEcrBackendApp1RepoName:
+    Description: Name for test-backend-app1 ecr repo
+    Type: String
+    Default: test-backend-app1
+  TestEcrBackendApp2RepoName:
+    Description: Name for test-backend-app2 ecr repo
+    Type: String
+    Default: test-backend-app2
+  ProdEcrFrontendApp1RepoName:
+    Description: Name for prod-frontend-app1 ecr repo
+    Type: String
+    Default: prod-frontend-app1
+  ProdEcrFrontendApp2RepoName:
+    Description: Name for prod-frontend-app2 ecr repo
+    Type: String
+    Default: prod-frontend-app2
+  ProdEcrBackendApp1RepoName:
+    Description: Name for prod-backend-app1 ecr repo
+    Type: String
+    Default: prod-backend-app1
+  ProdEcrBackendApp2RepoName:
+    Description: Name for prod-backend-app2 ecr repo
+    Type: String
+    Default: prod-backend-app2
+Resources:
+  DemoVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !Ref VPCCidr
+      Tags:
+        - Key: Name
+          Value: !Ref VPCName
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneA
+      CidrBlock: !Ref PrivateSubnetACidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PrivateSubnetA'
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneB
+      CidrBlock: !Ref PrivateSubnetBCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PrivateSubnetB'
+
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneC
+      CidrBlock: !Ref PrivateSubnetCCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PrivateSubnetC'
+
+  PrivateSubnetD:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneD
+      CidrBlock: !Ref PrivateSubnetDCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PrivateSubnetD'
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneA
+      CidrBlock: !Ref PublicSubnetACidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PublicSubnetA'
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneB
+      CidrBlock: !Ref PublicSubnetBCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PublicSubnetB'
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneC
+      CidrBlock: !Ref PublicSubnetCCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PublicSubnetC'
+
+  PublicSubnetD:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref DemoVPC
+      AvailabilityZone: !Ref AvailabilityZoneD
+      CidrBlock: !Ref PublicSubnetDCidr
+      Tags:
+        - Key: Name
+          Value: !Sub '${VPCName}-PublicSubnetD'
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref DemoVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref DemoVPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociationA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociationB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetB
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociationC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociationD:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetD
+      RouteTableId: !Ref PublicRouteTable
+
+  ElasticIPA:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  ElasticIPB:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  ElasticIPC:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  ElasticIPD:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NATGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPA.AllocationId
+      SubnetId: !Ref PublicSubnetA
+
+  NATGatewayB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPB.AllocationId
+      SubnetId: !Ref PublicSubnetB
+
+  NATGatewayC:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPC.AllocationId
+      SubnetId: !Ref PublicSubnetC
+
+  NATGatewayD:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIPD.AllocationId
+      SubnetId: !Ref PublicSubnetD
+
+  PrivateRouteTableA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref DemoVPC
+
+  PrivateRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref DemoVPC
+
+  PrivateRouteTableC:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref DemoVPC
+
+  PrivateRouteTableD:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref DemoVPC
+
+  PrivateRouteToInternetA:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableA
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayA
+
+  PrivateRouteToInternetB:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayB
+
+  PrivateRouteToInternetC:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableC
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayC
+
+  PrivateRouteToInternetD:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableD
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGatewayD
+
+  PrivateSubnetRouteTableAssociationA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTableA
+
+  PrivateSubnetRouteTableAssociationB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTableB
+
+  PrivateSubnetRouteTableAssociationC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetC
+      RouteTableId: !Ref PrivateRouteTableC
+
+  PrivateSubnetRouteTableAssociationD:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetD
+      RouteTableId: !Ref PrivateRouteTableD
+
+  ECSRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: ecs-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                  - 'logs:*'
+                Resource: '*'
+
+  ECSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public ECS containers
+      VpcId: !Ref 'DemoVPC'
+
+  ECSInternalSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the ECS private containers
+      VpcId: !Ref 'DemoVPC'
+
+  TestECSSecurityGroupIngressFromPublicALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from the public ALB
+      GroupId: !Ref 'ECSSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'TestPublicLoadBalancerSecurityGroup'
+
+  TestECSSecurityGroupIngressFromPrivateALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from the private ALB
+      GroupId: !Ref 'ECSInternalSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'TestPrivateLoadBalancerSecurityGroup'
+
+  ProdECSSecurityGroupIngressFromPublicALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from the public ALB
+      GroupId: !Ref 'ECSSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'ProdPublicLoadBalancerSecurityGroup'
+
+  ProdECSSecurityGroupIngressFromPrivateALB:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from the private ALB
+      GroupId: !Ref 'ECSInternalSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'ProdPrivateLoadBalancerSecurityGroup'
+
+  ECSSecurityGroupIngressFromSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from other containers in the same security group
+      GroupId: !Ref 'ECSInternalSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'ECSInternalSecurityGroup'
+
+  ECSSecurityGroupIngressFromSelfPublic:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from other containers in the same security group
+      GroupId: !Ref 'ECSSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'ECSSecurityGroup'
+
+  # Test Cluster
+  TestPublicLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets:
+        # The load balancer is placed into the public subnets, so that traffic
+        # from the internet can reach the load balancer directly via the internet gateway
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+        - !Ref PublicSubnetC
+        - !Ref PublicSubnetD
+      SecurityGroups:
+        - !Ref 'TestPublicLoadBalancerSecurityGroup'
+
+  TestPublicLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing load balancer
+      VpcId: !Ref 'DemoVPC'
+      SecurityGroupIngress:
+        # Allow access to ALB from anywhere on the internet
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+
+  TestInternalLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      Subnets:
+        # The load balancer is placed into the private subnets
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+        - !Ref PrivateSubnetC
+        - !Ref PrivateSubnetD
+      SecurityGroups:
+        - !Ref 'TestPrivateLoadBalancerSecurityGroup'
+
+  TestPrivateLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing load balancer
+      VpcId: !Ref 'DemoVPC'
+
+  #Allowing access to the internal loadbalancer only from the security group
+  # of the frontend containers
+  TestPrivateLoadBalancerSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allowing access to the private ALB only from frontend containers SG
+      GroupId: !Ref TestPrivateLoadBalancerSecurityGroup
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref ECSSecurityGroup
+
+  TestDummyTargetGroupPublic:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: test-dummy-tg-public
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  TestDummyTargetGroupPrivate:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: test-dummy-tg-private
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  TestPublicLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref 'TestDummyTargetGroupPublic'
+          Type: 'forward'
+      LoadBalancerArn: !Ref 'TestPublicLoadBalancer'
+      Port: 80
+      Protocol: HTTP
+
+  TestPrivateLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref 'TestDummyTargetGroupPrivate'
+          Type: 'forward'
+      LoadBalancerArn: !Ref 'TestInternalLoadBalancer'
+      Port: 80
+      Protocol: HTTP
+
+  TestECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: test-ecs-cluster
+
+  # Frontend App1
+  TestEcrFrontendApp1Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${TestEcrFrontendApp1RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  TestEcsFrontendApp1TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-test-frontend-app1-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-test-frontend-app1-container'
+          Image: !GetAtt TestEcrFrontendApp1Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${TestEcrFrontendApp1RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 5000
+          Environment:
+            - Name: url
+              Value: !Sub
+                - 'http://${lb_url}'
+                - lb_url: !GetAtt TestInternalLoadBalancer.DNSName
+
+  TestEcsFrontendApp1Service:
+    Type: AWS::ECS::Service
+    DependsOn: TestFrontendApp1LoadBalancerRule
+    Properties:
+      ServiceName: ecs-test-frontend-app1-service
+      Cluster: !Ref TestECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref TestEcsFrontendApp1TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-test-frontend-app1-container'
+          ContainerPort: 5000
+          TargetGroupArn: !Ref 'TestEcsFrontendApp1ServiceTargetGroup'
+
+  TestEcsFrontendApp1ServiceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app1/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-test-frontend-app1-service'
+      Port: 5000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  TestFrontendApp1LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TestEcsFrontendApp1ServiceTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app1/*'
+      ListenerArn: !Ref TestPublicLoadBalancerListener
+      Priority: 1
+
+  # Frontend App2
+  TestEcrFrontendApp2Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${TestEcrFrontendApp2RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  TestEcsFrontendApp2TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-test-frontend-app2-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-test-frontend-app2-container'
+          Image: !GetAtt TestEcrFrontendApp2Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${TestEcrFrontendApp2RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 5000
+          Environment:
+            - Name: url
+              Value: !Sub
+                - 'http://${lb_url}'
+                - lb_url: !GetAtt TestInternalLoadBalancer.DNSName
+
+  TestEcsFrontendApp2Service:
+    Type: AWS::ECS::Service
+    DependsOn: TestFrontendApp2LoadBalancerRule
+    Properties:
+      ServiceName: ecs-test-frontend-app2-service
+      Cluster: !Ref TestECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref TestEcsFrontendApp2TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-test-frontend-app2-container'
+          ContainerPort: 5000
+          TargetGroupArn: !Ref 'TestEcsFrontendApp2ServiceTargetGroup'
+
+  TestEcsFrontendApp2ServiceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app2/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-test-frontend-app2-service'
+      Port: 5000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  TestFrontendApp2LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TestEcsFrontendApp2ServiceTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app2/*'
+      ListenerArn: !Ref TestPublicLoadBalancerListener
+      Priority: 2
+
+  # Backend App1
+  TestEcrBackendApp1Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${TestEcrBackendApp1RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  TestEcsBackendApp1TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-test-backend-app1-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-test-backend-app1-container'
+          Image: !GetAtt TestEcrBackendApp1Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${TestEcrBackendApp1RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: environment
+              Value: test
+
+  TestEcsBackendApp1Service:
+    Type: AWS::ECS::Service
+    DependsOn: TestBackendApp1LoadBalancerInternalRule
+    Properties:
+      ServiceName: ecs-test-backend-app1-service
+      Cluster: !Ref TestECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSInternalSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref TestEcsBackendApp1TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-test-backend-app1-container'
+          ContainerPort: 3000
+          TargetGroupArn: !Ref 'TestEcsBackendApp1ServiceInternalTargetGroup'
+
+  TestEcsBackendApp1ServiceInternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app1/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-test-backend-app1-service'
+      Port: 3000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  TestBackendApp1LoadBalancerInternalRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TestEcsBackendApp1ServiceInternalTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app1/*'
+      ListenerArn: !Ref TestPrivateLoadBalancerListener
+      Priority: 1
+
+  # Backend App2
+  TestEcrBackendApp2Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${TestEcrBackendApp2RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  TestEcsBackendApp2TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-test-backend-app2-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-test-backend-app2-container'
+          Image: !GetAtt TestEcrBackendApp2Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${TestEcrBackendApp2RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: environment
+              Value: test
+
+  TestEcsBackendApp2Service:
+    Type: AWS::ECS::Service
+    DependsOn: TestBackendApp2LoadBalancerInternalRule
+    Properties:
+      ServiceName: ecs-test-backend-app2-service
+      Cluster: !Ref TestECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSInternalSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref TestEcsBackendApp2TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-test-backend-app2-container'
+          ContainerPort: 3000
+          TargetGroupArn: !Ref 'TestEcsBackendApp2ServiceInternalTargetGroup'
+
+  TestEcsBackendApp2ServiceInternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app2/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-test-backend-app2-service'
+      Port: 3000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  TestBackendApp2LoadBalancerInternalRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'TestEcsBackendApp2ServiceInternalTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app2/*'
+      ListenerArn: !Ref TestPrivateLoadBalancerListener
+      Priority: 2
+
+  # Prod Cluster
+  ProdPublicLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets:
+        # The load balancer is placed into the public subnets, so that traffic
+        # from the internet can reach the load balancer directly via the internet gateway
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+        - !Ref PublicSubnetC
+        - !Ref PublicSubnetD
+      SecurityGroups:
+        - !Ref 'ProdPublicLoadBalancerSecurityGroup'
+
+  ProdPublicLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing load balancer
+      VpcId: !Ref 'DemoVPC'
+      SecurityGroupIngress:
+        # Allow access to ALB from anywhere on the internet
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+
+  ProdInternalLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internal
+      Subnets:
+        # The load balancer is placed into the private subnets
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+        - !Ref PrivateSubnetC
+        - !Ref PrivateSubnetD
+      SecurityGroups:
+        - !Ref 'ProdPrivateLoadBalancerSecurityGroup'
+
+  ProdPrivateLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the public facing load balancer
+      VpcId: !Ref 'DemoVPC'
+
+  #Allowing access to the internal loadbalancer only from the security group
+  # of the frontend containers
+  ProdPrivateLoadBalancerSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allowing access to the private ALB only from frontend containers SG
+      GroupId: !Ref ProdPrivateLoadBalancerSecurityGroup
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref ECSSecurityGroup
+
+  ProdDummyTargetGroupPublic:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: prod-dummy-tg-public
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  ProdDummyTargetGroupPrivate:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: prod-dummy-tg-private
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  ProdPublicLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref 'ProdDummyTargetGroupPublic'
+          Type: 'forward'
+      LoadBalancerArn: !Ref 'ProdPublicLoadBalancer'
+      Port: 80
+      Protocol: HTTP
+
+  ProdPrivateLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref 'ProdDummyTargetGroupPrivate'
+          Type: 'forward'
+      LoadBalancerArn: !Ref 'ProdInternalLoadBalancer'
+      Port: 80
+      Protocol: HTTP
+
+  ProdECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: prod-ecs-cluster
+
+  # Frontend App1
+  ProdEcrFrontendApp1Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ProdEcrFrontendApp1RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  ProdEcsFrontendApp1TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-prod-frontend-app1-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-prod-frontend-app1-container'
+          Image: !GetAtt ProdEcrFrontendApp1Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${ProdEcrFrontendApp1RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 5000
+          Environment:
+            - Name: url
+              Value: !Sub
+                - 'http://${lb_url}'
+                - lb_url: !GetAtt ProdInternalLoadBalancer.DNSName
+
+  ProdEcsFrontendApp1Service:
+    Type: AWS::ECS::Service
+    DependsOn: ProdFrontendApp1LoadBalancerRule
+    Properties:
+      ServiceName: ecs-prod-frontend-app1-service
+      Cluster: !Ref ProdECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref ProdEcsFrontendApp1TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-prod-frontend-app1-container'
+          ContainerPort: 5000
+          TargetGroupArn: !Ref 'ProdEcsFrontendApp1ServiceTargetGroup'
+
+  ProdEcsFrontendApp1ServiceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app1/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-prod-frontend-app1-service'
+      Port: 5000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  ProdFrontendApp1LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'ProdEcsFrontendApp1ServiceTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app1/*'
+      ListenerArn: !Ref ProdPublicLoadBalancerListener
+      Priority: 1
+
+  # Frontend App2
+  ProdEcrFrontendApp2Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ProdEcrFrontendApp2RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  ProdEcsFrontendApp2TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-prod-frontend-app2-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-prod-frontend-app2-container'
+          Image: !GetAtt ProdEcrFrontendApp2Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${ProdEcrFrontendApp2RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 5000
+          Environment:
+            - Name: url
+              Value: !Sub
+                - 'http://${lb_url}'
+                - lb_url: !GetAtt ProdInternalLoadBalancer.DNSName
+
+  ProdEcsFrontendApp2Service:
+    Type: AWS::ECS::Service
+    DependsOn: ProdFrontendApp2LoadBalancerRule
+    Properties:
+      ServiceName: ecs-prod-frontend-app2-service
+      Cluster: !Ref ProdECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref ProdEcsFrontendApp2TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-prod-frontend-app2-container'
+          ContainerPort: 5000
+          TargetGroupArn: !Ref 'ProdEcsFrontendApp2ServiceTargetGroup'
+
+  ProdEcsFrontendApp2ServiceTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app2/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-prod-frontend-app2-service'
+      Port: 5000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  ProdFrontendApp2LoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'ProdEcsFrontendApp2ServiceTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app2/*'
+      ListenerArn: !Ref ProdPublicLoadBalancerListener
+      Priority: 2
+
+  # Backend App1
+  ProdEcrBackendApp1Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ProdEcrBackendApp1RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  ProdEcsBackendApp1TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-prod-backend-app1-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-prod-backend-app1-container'
+          Image: !GetAtt ProdEcrBackendApp1Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${ProdEcrBackendApp1RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: environment
+              Value: prod
+
+  ProdEcsBackendApp1Service:
+    Type: AWS::ECS::Service
+    DependsOn: ProdBackendApp1LoadBalancerInternalRule
+    Properties:
+      ServiceName: ecs-prod-backend-app1-service
+      Cluster: !Ref ProdECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSInternalSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref ProdEcsBackendApp1TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-prod-backend-app1-container'
+          ContainerPort: 3000
+          TargetGroupArn: !Ref 'ProdEcsBackendApp1ServiceInternalTargetGroup'
+
+  ProdEcsBackendApp1ServiceInternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app1/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-prod-backend-app1-service'
+      Port: 3000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  ProdBackendApp1LoadBalancerInternalRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'ProdEcsBackendApp1ServiceInternalTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app1/*'
+      ListenerArn: !Ref ProdPrivateLoadBalancerListener
+      Priority: 1
+
+  # Backend App2
+  ProdEcrBackendApp2Repo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${ProdEcrBackendApp2RepoName}-repo
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  ProdEcsBackendApp2TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: 'ecs-prod-backend-app2-task-definition'
+      Cpu: 512
+      Memory: 1024
+      NetworkMode: awsvpc
+      ExecutionRoleArn: !GetAtt ECSRole.Arn
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        - Name: 'ecs-prod-backend-app2-container'
+          Image: !GetAtt ProdEcrBackendApp2Repo.RepositoryUri
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub /ecs/${ProdEcrBackendApp2RepoName}-task-definition
+              awslogs-region: us-west-2
+              awslogs-stream-prefix: ecs
+          PortMappings:
+            - ContainerPort: 3000
+          Environment:
+            - Name: environment
+              Value: prod
+
+  ProdEcsBackendApp2Service:
+    Type: AWS::ECS::Service
+    DependsOn: ProdBackendApp2LoadBalancerInternalRule
+    Properties:
+      ServiceName: ecs-prod-backend-app2-service
+      Cluster: !Ref ProdECSCluster
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref ECSInternalSecurityGroup
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+            - !Ref PrivateSubnetC
+            - !Ref PrivateSubnetD
+      TaskDefinition: !Ref ProdEcsBackendApp2TaskDefinition
+      LoadBalancers:
+        - ContainerName: 'ecs-prod-backend-app2-container'
+          ContainerPort: 3000
+          TargetGroupArn: !Ref 'ProdEcsBackendApp2ServiceInternalTargetGroup'
+
+  ProdEcsBackendApp2ServiceInternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /app2/
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      TargetType: ip
+      Name: 'ecs-prod-backend-app2-service'
+      Port: 3000
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !Ref DemoVPC
+
+  # Create a rule on the load balancer for routing traffic to the target group
+  ProdBackendApp2LoadBalancerInternalRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref 'ProdEcsBackendApp2ServiceInternalTargetGroup'
+          Type: 'forward'
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - '/app2/*'
+      ListenerArn: !Ref ProdPrivateLoadBalancerListener
+      Priority: 2
+
+Outputs:
+  VPCId:
+    Description: vpc id
+    Value: !Ref DemoVPC
+  PublicSubnetA:
+    Description: SubnetId of public subnet A
+    Value: !Ref PublicSubnetA
+  PublicSubnetB:
+    Description: SubnetId of public subnet B
+    Value: !Ref PublicSubnetB
+  PublicSubnetC:
+    Description: SubnetId of public subnet C
+    Value: !Ref PublicSubnetC
+  PublicSubnetD:
+    Description: SubnetId of public subnet D
+    Value: !Ref PublicSubnetD
+  PrivateSubnetA:
+    Description: SubnetId of private subnet A
+    Value: !Ref PrivateSubnetA
+  PrivateSubnetB:
+    Description: SubnetId of private subnet B
+    Value: !Ref PublicSubnetB
+  PrivateSubnetC:
+    Description: SubnetId of private subnet C
+    Value: !Ref PublicSubnetC
+  PrivateSubnetD:
+    Description: SubnetId of private subnet D
+    Value: !Ref PublicSubnetD
+  TestPublicALBDns:
+    Description: Dns of the public ALB
+    Value: !GetAtt TestPublicLoadBalancer.DNSName
+  ProdPublicALBDns:
+    Description: Dns of the public ALB
+    Value: !GetAtt ProdPublicLoadBalancer.DNSName

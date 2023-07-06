@@ -1,0 +1,37 @@
+jobs:
+  - job: Build_and_Push
+    displayName: Build & Push Docker image
+    dependsOn: check_folder_changed
+    variables:
+      folder_changed: $[ dependencies.check_folder_changed.outputs['folder_changed.has_changed'] ]
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['folder_changed'], true))
+    steps:
+      - checkout: self
+      - script: |
+          echo Starting docker build
+          cd $(System.DefaultWorkingDirectory)/$(working-dir)
+          echo  docker build -t $(TEST_APP_NAME):$(TAG) -f $(System.DefaultWorkingDirectory)/$(DOCKERFILE_PATH) .
+          docker build -t $(TEST_APP_NAME):$(TAG) -f $(System.DefaultWorkingDirectory)/$(DOCKERFILE_PATH) .
+          echo  docker build -t $(PROD_APP_NAME):$(TAG) -f $(System.DefaultWorkingDirectory)/$(DOCKERFILE_PATH) .
+          docker build -t $(PROD_APP_NAME):$(TAG) -f $(System.DefaultWorkingDirectory)/$(DOCKERFILE_PATH) .
+        displayName: 'Run docker build for both $(test-env) and $(prod-env)'
+      - task: ECRPushImage@1
+        displayName: Push image to $(test-env) ECR repo with $(TAG)
+        inputs:
+          awsCredentials: 'AWS_ADO_USER_CONNECTION'
+          regionName: '$(AWS_REGION)'
+          imageSource: 'imagename'
+          sourceImageName: '$(TEST_APP_NAME)'
+          sourceImageTag: '$(TAG)'
+          repositoryName: '$(TEST_APP_NAME)'
+          pushTag: '$(TAG)'
+      - task: ECRPushImage@1
+        displayName: Push image to $(prod-env) ECR repo with $(TAG)
+        inputs:
+          awsCredentials: 'AWS_ADO_USER_CONNECTION'
+          regionName: '$(AWS_REGION)'
+          imageSource: 'imagename'
+          sourceImageName: '$(PROD_APP_NAME)'
+          sourceImageTag: '$(TAG)'
+          repositoryName: '$(PROD_APP_NAME)'
+          pushTag: '$(TAG)'
