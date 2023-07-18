@@ -90,6 +90,10 @@ Parameters:
     Description: Name for prod-backend-app2 ecr repo
     Type: String
     Default: prod-backend-app2
+  NamingPrefix:
+    Type: String
+    Description: The naming prefix for cloudmap.
+    Default: app
 Resources:
   DemoVPC:
     Type: AWS::EC2::VPC
@@ -366,7 +370,20 @@ Resources:
                   - 'ecr:BatchCheckLayerAvailability'
                   - 'ecr:GetDownloadUrlForLayer'
                   - 'ecr:BatchGetImage'
-                  - 'logs:*'
+                  - 'logs:CreateLogStream'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:PutLogEvents'
+                  - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+                  - 'elasticloadbalancing:Describe*'
+                  - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+                  - 'elasticloadbalancing:DeregisterTargets'
+                  - 'elasticloadbalancing:DescribeTargetGroups'
+                  - 'elasticloadbalancing:DescribeTargetHealth'
+                  - 'elasticloadbalancing:RegisterTargets'
+                  - 'ssmmessages:CreateControlChannel'
+                  - 'ssmmessages:CreateDataChannel'
+                  - 'ssmmessages:OpenControlChannel'
+                  - 'ssmmessages:OpenDataChannel'
                 Resource: '*'
 
   ECSSecurityGroup:
@@ -426,6 +443,14 @@ Resources:
     Properties:
       Description: Ingress from other containers in the same security group
       GroupId: !Ref 'ECSSecurityGroup'
+      IpProtocol: -1
+      SourceSecurityGroupId: !Ref 'ECSSecurityGroup'
+
+  ECSSecurityGroupIngressFromPublicToPrivate:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from public containers security group to private containers security group
+      GroupId: !Ref 'ECSInternalSecurityGroup'
       IpProtocol: -1
       SourceSecurityGroupId: !Ref 'ECSSecurityGroup'
 
@@ -531,10 +556,23 @@ Resources:
       Port: 80
       Protocol: HTTP
 
+  TestCloudMapNamespace:
+    Type: AWS::ServiceDiscovery::HttpNamespace
+    Properties:
+      Description: Namespace for the sample application.
+      Name: !Sub 'test-${NamingPrefix}.local'
+
   TestECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: test-ecs-cluster
+      ServiceConnectDefaults:
+        Namespace: !GetAtt TestCloudMapNamespace.Arn
+      CapacityProviders:
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
 
   # Frontend App1
   TestEcrFrontendApp1Repo:
@@ -552,10 +590,12 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
         - Name: 'ecs-test-frontend-app1-container'
+          Essential: true
           Image: !GetAtt TestEcrFrontendApp1Repo.RepositoryUri
           LogConfiguration:
             LogDriver: awslogs
@@ -563,14 +603,14 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${TestEcrFrontendApp1RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${TestEcrFrontendApp1RepoName}-ecs
           PortMappings:
             - ContainerPort: 5000
+              AppProtocol: http
+              Name: !Sub ${TestEcrFrontendApp1RepoName}
           Environment:
             - Name: url
-              Value: !Sub
-                - 'http://${lb_url}'
-                - lb_url: !GetAtt TestInternalLoadBalancer.DNSName
+              Value: !Sub http://${TestEcrBackendApp1RepoName}:3000
 
   TestEcsFrontendApp1Service:
     Type: AWS::ECS::Service
@@ -592,6 +632,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${TestEcrFrontendApp1RepoName}
+            DiscoveryName: !Sub ${TestEcrFrontendApp1RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${TestEcrFrontendApp1RepoName}
+                Port: 5000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${TestEcrFrontendApp1RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${TestEcrFrontendApp1RepoName}-serviceconnect
       TaskDefinition: !Ref TestEcsFrontendApp1TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-test-frontend-app1-container'
@@ -643,10 +698,12 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
         - Name: 'ecs-test-frontend-app2-container'
+          Essential: true
           Image: !GetAtt TestEcrFrontendApp2Repo.RepositoryUri
           LogConfiguration:
             LogDriver: awslogs
@@ -654,14 +711,14 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${TestEcrFrontendApp2RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${TestEcrFrontendApp2RepoName}-ecs
           PortMappings:
             - ContainerPort: 5000
+              AppProtocol: http
+              Name: !Sub ${TestEcrFrontendApp2RepoName}
           Environment:
             - Name: url
-              Value: !Sub
-                - 'http://${lb_url}'
-                - lb_url: !GetAtt TestInternalLoadBalancer.DNSName
+              Value: !Sub http://${TestEcrBackendApp2RepoName}:3000
 
   TestEcsFrontendApp2Service:
     Type: AWS::ECS::Service
@@ -683,6 +740,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${TestEcrFrontendApp2RepoName}
+            DiscoveryName: !Sub ${TestEcrFrontendApp2RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${TestEcrFrontendApp2RepoName}
+                Port: 5000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${TestEcrFrontendApp2RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${TestEcrFrontendApp2RepoName}-serviceconnect
       TaskDefinition: !Ref TestEcsFrontendApp2TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-test-frontend-app2-container'
@@ -734,10 +806,12 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
         - Name: 'ecs-test-backend-app1-container'
+          Essential: true
           Image: !GetAtt TestEcrBackendApp1Repo.RepositoryUri
           LogConfiguration:
             LogDriver: awslogs
@@ -745,9 +819,11 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${TestEcrBackendApp1RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${TestEcrBackendApp1RepoName}-ecs
           PortMappings:
             - ContainerPort: 3000
+              AppProtocol: http
+              Name: !Sub ${TestEcrBackendApp1RepoName}
           Environment:
             - Name: environment
               Value: test
@@ -772,6 +848,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${TestEcrBackendApp1RepoName}
+            DiscoveryName: !Sub ${TestEcrBackendApp1RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${TestEcrBackendApp1RepoName}
+                Port: 3000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${TestEcrBackendApp1RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${TestEcrBackendApp1RepoName}-serviceconnect
       TaskDefinition: !Ref TestEcsBackendApp1TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-test-backend-app1-container'
@@ -823,10 +914,12 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
         - Name: 'ecs-test-backend-app2-container'
+          Essential: true
           Image: !GetAtt TestEcrBackendApp2Repo.RepositoryUri
           LogConfiguration:
             LogDriver: awslogs
@@ -834,9 +927,11 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${TestEcrBackendApp2RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${TestEcrBackendApp2RepoName}-ecs
           PortMappings:
             - ContainerPort: 3000
+              AppProtocol: http
+              Name: !Sub ${TestEcrBackendApp2RepoName}
           Environment:
             - Name: environment
               Value: test
@@ -861,6 +956,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${TestEcrBackendApp2RepoName}
+            DiscoveryName: !Sub ${TestEcrBackendApp2RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${TestEcrBackendApp2RepoName}
+                Port: 3000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${TestEcrBackendApp2RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${TestEcrBackendApp2RepoName}-serviceconnect
       TaskDefinition: !Ref TestEcsBackendApp2TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-test-backend-app2-container'
@@ -998,10 +1108,23 @@ Resources:
       Port: 80
       Protocol: HTTP
 
+  ProdCloudMapNamespace:
+    Type: AWS::ServiceDiscovery::HttpNamespace
+    Properties:
+      Description: Namespace for the sample application.
+      Name: !Sub 'prod-${NamingPrefix}.local'
+
   ProdECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: prod-ecs-cluster
+      ServiceConnectDefaults:
+        Namespace: !GetAtt ProdCloudMapNamespace.Arn
+      CapacityProviders:
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: FARGATE_SPOT
+          Weight: 1
 
   # Frontend App1
   ProdEcrFrontendApp1Repo:
@@ -1019,6 +1142,7 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -1030,14 +1154,14 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${ProdEcrFrontendApp1RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${ProdEcrFrontendApp1RepoName}-ecs
           PortMappings:
             - ContainerPort: 5000
+              AppProtocol: http
+              Name: !Sub ${ProdEcrFrontendApp1RepoName}
           Environment:
             - Name: url
-              Value: !Sub
-                - 'http://${lb_url}'
-                - lb_url: !GetAtt ProdInternalLoadBalancer.DNSName
+              Value: !Sub http://${ProdEcrBackendApp1RepoName}:3000
 
   ProdEcsFrontendApp1Service:
     Type: AWS::ECS::Service
@@ -1059,6 +1183,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${ProdEcrFrontendApp1RepoName}
+            DiscoveryName: !Sub ${ProdEcrFrontendApp1RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${ProdEcrFrontendApp1RepoName}
+                Port: 5000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${ProdEcrFrontendApp1RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${ProdEcrFrontendApp1RepoName}-serviceconnect
       TaskDefinition: !Ref ProdEcsFrontendApp1TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-prod-frontend-app1-container'
@@ -1110,6 +1249,7 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -1121,14 +1261,14 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${ProdEcrFrontendApp2RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${ProdEcrFrontendApp2RepoName}-ecs
           PortMappings:
             - ContainerPort: 5000
+              AppProtocol: http
+              Name: !Sub ${ProdEcrFrontendApp2RepoName}
           Environment:
             - Name: url
-              Value: !Sub
-                - 'http://${lb_url}'
-                - lb_url: !GetAtt ProdInternalLoadBalancer.DNSName
+              Value: !Sub http://${ProdEcrBackendApp2RepoName}:3000
 
   ProdEcsFrontendApp2Service:
     Type: AWS::ECS::Service
@@ -1150,6 +1290,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${ProdEcrFrontendApp2RepoName}
+            DiscoveryName: !Sub ${ProdEcrFrontendApp2RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${ProdEcrFrontendApp2RepoName}
+                Port: 5000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${ProdEcrFrontendApp2RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${ProdEcrFrontendApp2RepoName}-serviceconnect
       TaskDefinition: !Ref ProdEcsFrontendApp2TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-prod-frontend-app2-container'
@@ -1201,6 +1356,7 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -1212,9 +1368,11 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${ProdEcrBackendApp1RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${ProdEcrBackendApp1RepoName}-ecs
           PortMappings:
             - ContainerPort: 3000
+              AppProtocol: http
+              Name: !Sub ${ProdEcrBackendApp1RepoName}
           Environment:
             - Name: environment
               Value: prod
@@ -1239,6 +1397,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${ProdEcrBackendApp1RepoName}
+            DiscoveryName: !Sub ${ProdEcrBackendApp1RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${ProdEcrBackendApp1RepoName}
+                Port: 3000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${ProdEcrBackendApp1RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${ProdEcrBackendApp1RepoName}-serviceconnect
       TaskDefinition: !Ref ProdEcsBackendApp1TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-prod-backend-app1-container'
@@ -1290,6 +1463,7 @@ Resources:
       Memory: 1024
       NetworkMode: awsvpc
       ExecutionRoleArn: !GetAtt ECSRole.Arn
+      TaskRoleArn: !GetAtt ECSRole.Arn
       RequiresCompatibilities:
         - FARGATE
       ContainerDefinitions:
@@ -1301,9 +1475,11 @@ Resources:
               awslogs-create-group: true
               awslogs-group: !Sub /ecs/${ProdEcrBackendApp2RepoName}-task-definition
               awslogs-region: us-west-2
-              awslogs-stream-prefix: ecs
+              awslogs-stream-prefix: !Sub ${ProdEcrBackendApp2RepoName}-ecs
           PortMappings:
             - ContainerPort: 3000
+              AppProtocol: http
+              Name: !Sub ${ProdEcrBackendApp2RepoName}
           Environment:
             - Name: environment
               Value: prod
@@ -1328,6 +1504,21 @@ Resources:
             - !Ref PrivateSubnetB
             - !Ref PrivateSubnetC
             - !Ref PrivateSubnetD
+      ServiceConnectConfiguration:
+        Enabled: true
+        Services:
+          - PortName: !Sub ${ProdEcrBackendApp2RepoName}
+            DiscoveryName: !Sub ${ProdEcrBackendApp2RepoName}
+            ClientAliases:
+              - DnsName: !Sub ${ProdEcrBackendApp2RepoName}
+                Port: 3000
+        LogConfiguration:
+          LogDriver: awslogs
+          Options:
+            awslogs-create-group: true
+            awslogs-group: !Sub /ecs/${ProdEcrBackendApp2RepoName}-service
+            awslogs-region: !Ref AWS::Region
+            awslogs-stream-prefix: !Sub ${ProdEcrBackendApp2RepoName}-serviceconnect
       TaskDefinition: !Ref ProdEcsBackendApp2TaskDefinition
       LoadBalancers:
         - ContainerName: 'ecs-prod-backend-app2-container'
