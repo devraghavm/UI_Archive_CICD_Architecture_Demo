@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const hello = require('./hello');
-var cors = require('cors');
-router.use(cors());
+// var cors = require('cors');
+// router.use(cors());
 
 // simple logger for this router's requests
 // all requests to this router will first hit this middleware

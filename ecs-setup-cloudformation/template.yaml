@@ -609,7 +609,7 @@ Resources:
               AppProtocol: http
               Name: !Sub ${TestEcrFrontendApp1RepoName}
           Environment:
-            - Name: url
+            - Name: apiBackendUrl
               Value: !Sub http://${TestEcrBackendApp1RepoName}:3000
 
   TestEcsFrontendApp1Service:
@@ -717,7 +717,7 @@ Resources:
               AppProtocol: http
               Name: !Sub ${TestEcrFrontendApp2RepoName}
           Environment:
-            - Name: url
+            - Name: apiBackendUrl
               Value: !Sub http://${TestEcrBackendApp2RepoName}:3000
 
   TestEcsFrontendApp2Service:
@@ -873,7 +873,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /app1/
+      HealthCheckPath: /api1/
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -894,7 +894,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - '/app1/*'
+            - '/api1/*'
       ListenerArn: !Ref TestPrivateLoadBalancerListener
       Priority: 1
 
@@ -981,7 +981,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /app2/
+      HealthCheckPath: /api2/
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -1002,7 +1002,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - '/app2/*'
+            - '/api2/*'
       ListenerArn: !Ref TestPrivateLoadBalancerListener
       Priority: 2
 
@@ -1160,7 +1160,7 @@ Resources:
               AppProtocol: http
               Name: !Sub ${ProdEcrFrontendApp1RepoName}
           Environment:
-            - Name: url
+            - Name: apiBackendUrl
               Value: !Sub http://${ProdEcrBackendApp1RepoName}:3000
 
   ProdEcsFrontendApp1Service:
@@ -1267,7 +1267,7 @@ Resources:
               AppProtocol: http
               Name: !Sub ${ProdEcrFrontendApp2RepoName}
           Environment:
-            - Name: url
+            - Name: apiBackendUrl
               Value: !Sub http://${ProdEcrBackendApp2RepoName}:3000
 
   ProdEcsFrontendApp2Service:
@@ -1422,7 +1422,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /app1/
+      HealthCheckPath: /api1/
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -1443,7 +1443,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - '/app1/*'
+            - '/api1/*'
       ListenerArn: !Ref ProdPrivateLoadBalancerListener
       Priority: 1
 
@@ -1529,7 +1529,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 6
-      HealthCheckPath: /app2/
+      HealthCheckPath: /api2/
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
@@ -1550,7 +1550,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - '/app2/*'
+            - '/api2/*'
       ListenerArn: !Ref ProdPrivateLoadBalancerListener
       Priority: 2
 

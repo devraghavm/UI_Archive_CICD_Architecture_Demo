@@ -10,6 +10,6 @@ dotenv.config({
 module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'production',
   PORT: process.env.PORT || 3000,
-  basePath: '/app1',
+  basePath: '/api1',
   environment: process.env.environment || 'test',
 };

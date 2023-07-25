@@ -1,20 +1,23 @@
-FROM node:20-alpine
+# ----------------------------
+# build from source
+# ----------------------------
+FROM node:20 AS build
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json are copied
 COPY package*.json ./
-
 RUN npm install
-# If you are building your code for production
 
-# Bundle app source
 COPY . .
+RUN npm run build
 
-#I use the port 3000 to expose the backend app and the port 5000 for the frontend app
-#You can use the ports that you want
-EXPOSE 5000 
+# ----------------------------
+# run with nginx
+# ----------------------------
+FROM nginx
 
-CMD [ "npm", "run", "prod" ]
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d
+COPY --from=build /app/dist/angular-tutorial /usr/share/nginx/html
+
+EXPOSE 5000
