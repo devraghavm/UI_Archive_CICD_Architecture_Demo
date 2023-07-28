@@ -11,7 +11,7 @@ export class ProductService {
   ) { }
 
   getAll() {
-    return this.http.get<User[]>(`${environment.apiBackendUrl}/${environment.app}/products`);
+    return this.http.get<User[]>(`${environment.app}/products`);
   }
 
 }
